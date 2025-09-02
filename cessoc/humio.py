@@ -121,7 +121,7 @@ def create_session() -> requests.sessions.Session:
     retry_strategy = Retry(
         total=5,
         backoff_factor=5,
-        # backoff_max=30,
+        backoff_max=30,
         # These status codes indicate something temporarily wrong, fixable by re-request
         status_forcelist=[408, 429, 500, 502, 503, 504],
         allowed_methods=["GET", "POST"],
