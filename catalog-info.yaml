@@ -17,4 +17,4 @@ spec:
   lifecycle: development
   system: Security Event Monitoring & Development
   dependencyOf:
-    - component:default/bluecat
+    - component:default/bluecat-openshift
