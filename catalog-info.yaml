@@ -4,7 +4,6 @@ metadata:
   name: soc-base-class
   title: SOC Base Class
   description: Base class for SOC services
-  tags:
   annotations:
     github.com/project-slug: ces-soc/soc-base-class-openshift
     deployment: sre-pipeline
