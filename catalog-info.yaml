@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: soc-base-class
+  title: SOC Base Class
+  description: Base class for SOC services
+  tags:
+  annotations:
+    github.com/project-slug: ces-soc/soc-base-class-openshift
+    deployment: sre-pipeline
+  links:
+    - title: Source code repository (GitHub)
+      url: https://github.com/ces-soc/soc-base-class-openshift
+      icon: GitHub
+spec:
+  type: system
+  owner: group:full-time-engineers
+  lifecycle: development
+  system: Security Event Monitoring & Development
+  dependencyOf:
+    - component:default/bluecat
