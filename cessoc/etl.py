@@ -24,7 +24,7 @@ from urllib3.util.retry import Retry
 import boto3
 from botocore.exceptions import ClientError
 
-from cessoc.configmanager import ConfigManager
+from cessoc.logging import cessoc_logging
 
 
 class ETL(ABC):
@@ -34,12 +34,7 @@ class ETL(ABC):
     """
 
     def __init__(self):
-        """Provides a config dictionary for derived class"""
-        self.config_manager = ConfigManager()
-        self.config = None
-        self.logger = logging.getLogger(
-            self.__class__.__name__
-        )  # This line should come after the config manager is intialized because the config_manager configures the root logger
+        self._logger = cessoc_logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def _send_humio(
         self,
