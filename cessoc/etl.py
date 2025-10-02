@@ -24,7 +24,7 @@ from urllib3.util.retry import Retry
 import boto3
 from botocore.exceptions import ClientError
 
-from cessoc.logging import cessoc_logging
+from cessoc.configmanager import ConfigManager
 
 
 class ETL(ABC):
