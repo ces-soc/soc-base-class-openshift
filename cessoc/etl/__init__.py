@@ -12,6 +12,7 @@ import os
 import time
 import ssl
 import uuid
+
 from abc import ABC, abstractmethod
 from typing import Dict, List, Union, Optional
 from datetime import datetime, timedelta
@@ -25,6 +26,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from cessoc.configmanager import ConfigManager
+from cessoc.logging import cessoc_logging
 
 
 class ETL(ABC):
