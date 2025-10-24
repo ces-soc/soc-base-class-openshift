@@ -36,8 +36,8 @@ class ETL(ABC):
     """
 
     # def __init__(self):
-    #     self._logger = logging.getLogger(self.__class__.__name__)
-    #     self._logger = cessoc_logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        # logging = logging.getLogger(self.__class__.__name__)
+        # logging = cessoc_logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def _send_humio(
         self,
@@ -76,7 +76,7 @@ class ETL(ABC):
             if healthcheck:
                 # Creates a specific connection using healthcheck credentials to humio
                 if "ON_PREM_DEPLOY" in os.environ:
-                    # self.logger.debug("Accessing ON-PREM endpoint, credentials")
+                    logging.debug("Accessing ON-PREM endpoint, credentials")
                     humio_endpoint = self.get_value(
                         f"/{self.campus_name}/secops-humio/config/ingest_api-on_prem"
                     )
@@ -84,7 +84,7 @@ class ETL(ABC):
                         f"/{self.campus_name}/secops-humio/secrets/healthcheck/ingest_token"
                     )
                 else:
-                    # self.logger.debug("Accessing ECS healthcheck endpoint, credentials")
+                    logging.debug("Accessing ECS healthcheck endpoint, credentials")
                     humio_endpoint = self.get_value(
                         f"/{self.campus_name}/secops-humio/config/ingest_api"
                     )
@@ -118,10 +118,10 @@ class ETL(ABC):
                     headers={"Authorization": "Bearer " + humio_token},
                 )
                 resp.raise_for_status()
-                # if not healthcheck:
-                #     self.logger.info(
-                #         f"Event batch of size {len(data[0]['messages'])} has been sent to Humio"
-                #     )
+                if not healthcheck:
+                    logging.info(
+                        f"Event batch of size {len(data[0]['messages'])} has been sent to Humio"
+                    )
 
         except ClientError as ex:
             raise Exception("Unable to get humio endpoint/ingest_token") from ex
@@ -152,7 +152,7 @@ class ETL(ABC):
         }
         try:
             self.write_humio([health_obj], path=path, healthcheck=True)
-            # self.logger.debug("Healthcheck event: %s", json.dumps(health_obj))
+            logging.debug("Healthcheck event: %s", json.dumps(health_obj))
         except ClientError as ex:
             raise Exception("Client Configuration unavailable or missing") from ex
 
@@ -241,14 +241,14 @@ class ETL(ABC):
             channel.basic_publish(
                 exchange, routing_key, json.dumps(body), properties, mandatory=True
             )
-            # self.logger.info(
-            #     "Published message to exchange '%s' with routing key '%s' and correlation id '%s'",
-            #     exchange,
-            #     routing_key,
-            #     correlation_id,
-            # )
-        # except pika.exceptions.UnroutableError:
-        #     self.logger.error("Message was unroutable")
+            logging.info(
+                "Published message to exchange '%s' with routing key '%s' and correlation id '%s'",
+                exchange,
+                routing_key,
+                correlation_id,
+            )
+        except pika.exceptions.UnroutableError:
+            logging.error("Message was unroutable")
 
         # Consume all messages on the response queue
         if reply_to and reply_to_queue is not None:
@@ -265,23 +265,23 @@ class ETL(ABC):
                     if (
                         properties.correlation_id == correlation_id
                     ):  # Only accept the correlated reply
-                        # self.logger.info(
-                        #     "Reply received with correlation id: %s", correlation_id
-                        # )
+                        logging.info(
+                            "Reply received with correlation id: %s", correlation_id
+                        )
                         channel.basic_ack(method_frame.delivery_tag)
                         channel.cancel()  # Re-queues anything it may have picked up
                         channel.close()
                         connection.close()
                         return json.loads(reply_body)
                     else:  # Reject non-correlated messages
-                        # self.logger.debug("Rejecting message")
-                        # channel.basic_nack(method_frame.delivery_tag)
+                        logging.debug("Rejecting message")
+                        channel.basic_nack(method_frame.delivery_tag)
                     channel.cancel()
                     break
-            # self.logger.error(
-            #     "Message timed out before a reply was received, correlation id: %s",
-            #     correlation_id,
-            # )
+            logging.error(
+                "Message timed out before a reply was received, correlation id: %s",
+                correlation_id,
+            )
 
         # Clean up connection and channel
         channel.close()
@@ -326,17 +326,17 @@ class ETL(ABC):
 
         # Start time cannot be more than 7 days in past (1 minute leeway given)
         if last_request_time < (current_time - timedelta(days=6, hours=23, minutes=59)):
-            # self.logger.info(
-            #     "Last request timestamp exceeds 7 days. Resetting timestamp to 7 days ago"
-            # )
+            logging.info(
+                "Last request timestamp exceeds 7 days. Resetting timestamp to 7 days ago"
+            )
             last_request_time = current_time - timedelta(days=6, hours=23, minutes=59)
 
         # Start time and end time cannot be more than 24 hours apart
         # Because of high-event amounts, timestamps are chunked by chunk_size_in_hours
         if last_request_time < (current_time - timedelta(hours=chunk_size_in_hours)):
-            # self.logger.debug(
-            #     "Start time and end time interval exceeds %s hours", chunk_size_in_hours
-            # )
+            logging.debug(
+                "Start time and end time interval exceeds %s hours", chunk_size_in_hours
+            )
             while True:
                 next_time = last_request_time + timedelta(hours=chunk_size_in_hours)
                 if next_time < current_time:  # Current time and last_request_time
@@ -359,7 +359,7 @@ class ETL(ABC):
                 "end_time": str(current_time),
             }
             time_ranges.append(time_range)
-        # self.logger.debug(time_ranges)
+        logging.debug(time_ranges)
         return time_ranges
 
     def write_s3(
@@ -438,7 +438,7 @@ class ETL(ABC):
 
         :returns: Bucket data as string or as bytes.
         """
-        # self.logger.debug("Accessing %s in s3 bucket %s", key, bucket)
+        logging.debug("Accessing %s in s3 bucket %s", key, bucket)
         if access_key and secret_key:
             client = boto3.client(
                 "s3",
@@ -450,9 +450,9 @@ class ETL(ABC):
             client = boto3.client("s3", region_name=region_name)
         try:
             response = client.get_object(Key=key, Bucket=bucket)
-            # self.logger.debug(response)
+            logging.debug(response)
         except ClientError as ex:
-            # self.logger.error("Could not get from S3: %s", ex)
+            logging.error("Could not get from S3: %s", ex)
             raise ex
         else:
             return response["Body"].read()
